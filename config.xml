@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.example.activitytimer" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <name>Activity Timer</name>
+  <description>An app for Timing your some Activity</description>
+  <author email="" href="">Stupid Horny Games, Inc.</author>
+  <content src="index.html" />
+  <access origin="*" />
+  <allow-navigation href="*" />
+  <preference name="Fullscreen" value="false" />
+  <preference name="DisallowOverscroll" value="true" />
+  <!-- Lock the app to portrait (vertical) orientation on supported platforms -->
+  <preference name="Orientation" value="portrait" />
+  <platform name="android">
+    <!-- Android-specific preferences go here -->
+  </platform>
+  <platform name="ios">
+    <!-- iOS-specific preferences go here -->
+  </platform>
+  <!-- Add icon and splash resources in the res/ folder and update below if you add images -->
+  <!-- Placeholder icon entries: uses a single SVG file which Cordova will copy into platform resources when building. -->
+  <icon src="res/icon.png" />
+  <platform name="android">
+  </platform>
+  <platform name="ios">
+  </platform>
+</widget>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Activity Timer</title>
+  <link rel="icon" type="image/svg+xml" href="../res/icon.png">
+  <style>
+    /* make sizing predictable */
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start; /* align children to top of the viewport */
+      margin: 0; /* we'll control horizontal padding with container rules */
+      padding-top: env(safe-area-inset-top, 20px); /* support notches / status bars */
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+      min-height: 100vh; /* ensure body fills viewport */
+      overflow: hidden; /* prevent page scroll by default; inner elements will scroll if needed */
+    }
+
+    .container {
+      background: #fff;
+      padding: clamp(0.75rem, 2.5vw, 1.25rem);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      width: min(640px, calc(100% - 2rem));
+      /* ensure container never causes the body to overflow vertically */
+      max-height: calc(100vh - env(safe-area-inset-top, 20px) - env(safe-area-inset-bottom, 20px) - 2rem);
+      overflow-y: auto; /* allow inner scrolling only if content truly exceeds container */
+      -webkit-overflow-scrolling: touch;
+      margin: 0 auto;
+    }
+    .main {
+      flex: 1 1 auto; /* take remaining vertical space but allow shrinking */
+      display: flex;
+      align-items: center; /* center vertically within the remaining space */
+      justify-content: center; /* center horizontally */
+      width: 100%;
+      padding: 1rem; /* give breathing room around the container */
+    }
+    .header {
+      /* increased size for better visibility on phones and tablets */
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 700;
+      margin: 0.75rem 0 0.5rem 0;
+      color: #333;
+      text-align: center;
+      width: 100%;
+      padding: 0 1rem;
+    }
+
+    #timer {
+      font-size: clamp(2.25rem, 8vw, 4rem);
+      margin: 1rem 0;
+      color: #0078d7;
+      line-height: 1;
+      word-break: normal;
+    }
+
+    button {
+      background: #0078d7;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: inline-block;
+      min-width: 8rem;
+    }
+
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+
+    button:not(:disabled):hover {
+      background: #005fa3;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    Activity Timer
+  </div>
+  <div class="main">
+    <div class="container">
+      Push the button and do your activity! Or put better instructions here.
+    <div id="timer">10</div>
+    <button id="startBtn">Start Timer</button>
+    </div>
+  </div>
+  <script>
+    const timerDisplay = document.getElementById('timer');
+    const startBtn = document.getElementById('startBtn');
+    let countdown = null;
+    let timeLeft = 10;
+    // Web Audio API context (created on user gesture)
+    let audioCtx = null;
+
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        // Some platforms require a user gesture before AudioContext can be resumed/created.
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      // Try to resume if suspended (common on mobile browsers)
+      if (audioCtx && audioCtx.state === 'suspended' && audioCtx.resume) {
+        audioCtx.resume().catch(() => {/* ignore */});
+      }
+    }
+
+    // Play a short beep using Web Audio API. duration in ms.
+    function playBeep({ frequency = 880, duration = 400, volume = 0.6 } = {}) {
+      try {
+        ensureAudioContext();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = frequency;
+        gain.gain.value = volume;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        osc.start(now);
+        // smooth envelope to avoid clicks
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(volume, now + 0.01);
+        gain.gain.linearRampToValueAtTime(0.0001, now + duration / 1000);
+        osc.stop(now + duration / 1000 + 0.02);
+      } catch (e) {
+        // If Web Audio fails, silently ignore - optional fallback could be added later.
+        console.warn('playBeep failed', e);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(countdown);
+      timeLeft = 10;
+      timerDisplay.textContent = timeLeft;
+      startBtn.disabled = false;
+      startBtn.textContent = 'Start Timer';
+    }
+
+    startBtn.addEventListener('click', () => {
+      // Prime/ensure audio context on the user gesture so sound can play later.
+      ensureAudioContext();
+      // Some devices also require an immediate play/resume; resume if possible.
+      if (audioCtx && audioCtx.state === 'suspended' && audioCtx.resume) {
+        audioCtx.resume().catch(() => {/* ignore */});
+      }
+
+      startBtn.disabled = true;
+      startBtn.textContent = 'Running...';
+      timerDisplay.textContent = timeLeft;
+      countdown = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          // Play a short beep and vibrate (if supported) when timer ends.
+          try {
+            // Primary: Web Audio beep
+            playBeep({ frequency: 300, duration: 500, volume: 5 });
+            // Secondary: vibrate pattern for devices that support it
+            if (navigator.vibrate) navigator.vibrate([500, 500, 500]);
+          } catch (e) {
+            console.warn('End-of-timer feedback failed', e);
+          }
+
+          setTimeout(resetTimer, 1000);
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+
+</html>

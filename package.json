@@ -1,0 +1,27 @@
+{
+  "name": "activity-timer",
+  "version": "1.0.0",
+  "description": "Activity Timer",
+  "main": "www/index.html",
+  "cordova": {
+    "id": "com.stupidhornygames.activitytimer",
+    "platforms": [
+      "android"
+    ]
+  },
+  "scripts": {
+    "serve": "cordova serve",
+    "add:android": "cordova platform add android",
+    "add:ios": "cordova platform add ios",
+    "build:android": "cordova build android",
+    "build:ios": "cordova build ios"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cordova": "^12.0.0"
+  },
+  "devDependencies": {
+    "cordova-android": "^14.0.1"
+  }
+}
