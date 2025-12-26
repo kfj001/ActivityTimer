@@ -10,6 +10,7 @@
     ]
   },
   "scripts": {
+    "start": "npx http-server www -p 8000 -o",
     "serve": "cordova serve",
     "add:android": "cordova platform add android",
     "add:ios": "cordova platform add ios",

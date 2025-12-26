@@ -25,6 +25,14 @@ iOS (macOS only):
 
 ## Quick commands (PowerShell)
 
+### Local debugging - Run web server
+```bash
+npm start
+```
+This opens a local dev server at `http://localhost:8000` with the `www/` contents in your browser (auto-opens).
+
+Alternatively: `npx http-server www -p 8000`
+
 ### Add platforms
 cordova platform add android
 ### On macOS only:
