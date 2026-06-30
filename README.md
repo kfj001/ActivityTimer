@@ -2,6 +2,8 @@
 
 This is a simple Apache Cordova scaffold wrapping your a single-page web app that embodies a timer for some abstract activity.
 
+[img @![Preview of the Activity Timer app](Screenshot_20260630-000321.png)]
+
 ## Dev Container Users
 This project has a configured devcontainer environment which you can use to build the project for Android devices.
 
